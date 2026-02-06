@@ -117,5 +117,11 @@ If you’re tracking real client interactions and notes for your job:
 ## Troubleshooting
 
 - **Build fails:** Check the **Logs** tab for errors. Often it’s a missing dependency or wrong **Build** / **Start** command (use `npm install` and `npm start`).
+- **502 Bad Gateway (especially after moving to Starter):**
+  1. Open your service on Render → **Logs** tab. Check the **runtime** logs (not just build). Look for the line `Client Command Center listening on 0.0.0.0:XXXX`. If you don’t see it, the app is crashing before it listens.
+  2. If the app crashes on startup, the log will show the error (e.g. missing module, bad env var, or permission error writing to **DATA_DIR**). Fix that and redeploy.
+  3. If you added a **Persistent Disk** and set **DATA_DIR**: ensure the disk is attached and the path matches (e.g. `DATA_DIR=/data` and mount path is `/data`). If the path is wrong or the disk isn’t mounted, the app can crash when it tries to read/write.
+  4. Confirm **Start Command** is exactly `npm start` (no `node server.js` with a fixed port).
+  5. After redeploying, try opening `https://your-service.onrender.com/health` in a browser. If you see `ok`, the app is up and the 502 may be from cache or a brief deploy delay; try the main URL again.
 - **App shows “Application failed to respond”:** Check **Logs** for crashes. Ensure **Start Command** is `npm start` and that the app listens on `process.env.PORT` (your `server.js` already does).
 - **Login doesn’t work:** Confirm **APP_USER**, **APP_PASSWORD**, and **SESSION_SECRET** are set in **Environment** and redeploy if you changed them.

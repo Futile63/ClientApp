@@ -682,7 +682,7 @@ function dueBadge(c, info) {
   }
 
   const dueText =
-    !c.lastTouch ? "Needs first touch" :
+    !c.lastTouch ? (c.nextTouch ? "Scheduled" : "Needs first touch") :
     info.overdueDays > 0 ? `Overdue ${info.overdueDays}d` :
     info.daysUntilDue === 0 ? "Due today" :
     `Due in ${info.daysUntilDue}d`;

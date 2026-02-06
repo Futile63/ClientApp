@@ -23,6 +23,12 @@ const SESSION_SECRET = process.env.SESSION_SECRET || "change-me-in-production";
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Health check (no auth) – Render and load balancers can hit this
+app.get("/health", (req, res) => {
+  res.status(200).send("ok");
+});
+
 app.use(
   session({
     secret: SESSION_SECRET,
@@ -130,7 +136,7 @@ const staticOpts = process.env.NODE_ENV === "production" ? {} : { maxAge: 0, eta
 app.use(express.static(__dirname, staticOpts));
 
 app.listen(PORT, HOST, () => {
-  console.log(`Client Command Center running at http://localhost:${PORT}`);
+  console.log(`Client Command Center listening on ${HOST}:${PORT} (PORT=${process.env.PORT || "not set"})`);
   if (AUTH_ENABLED) console.log("Login enabled (APP_USER / APP_PASSWORD set).");
   else console.log("Login disabled. Set APP_USER and APP_PASSWORD to enable.");
   console.log("Data file:", DATA_FILE);
