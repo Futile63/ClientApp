@@ -92,7 +92,8 @@ function initEvents() {
         contact: (contactEl?.value ?? "").trim(),
         notes: (notesEl?.value ?? "").trim(),
         nextAction: "",
-        lastTouch: "" // YYYY-MM-DD
+        lastTouch: "", // YYYY-MM-DD
+        nextTouch: ""  // YYYY-MM-DD
       };
 
       state.clients.unshift(client);
@@ -124,6 +125,8 @@ function initEvents() {
       c.contact = (byId("editContact")?.value ?? "").trim();
       c.notes = (byId("editNotes")?.value ?? "").trim();
       c.nextAction = (byId("editNextAction")?.value ?? "").trim();
+      const nextTouchVal = (byId("editNextTouch")?.value ?? "").trim();
+      c.nextTouch = nextTouchVal || "";
       const lastTouchVal = (byId("editLastTouch")?.value ?? "").trim();
       c.lastTouch = lastTouchVal || "";
 
@@ -156,12 +159,13 @@ function exportDownloadJson() {
 }
 
 function exportDownloadCsv() {
-  const headers = ["Name", "Tier", "Contact", "Last Touch", "Notes", "To Do"];
+  const headers = ["Name", "Tier", "Contact", "Last Touch", "Next Touch", "Notes", "To Do"];
   const rows = state.clients.map((c) => [
     c.name,
     c.tier,
     c.contact || "",
     c.lastTouch || "",
+    c.nextTouch || "",
     (c.notes || "").replace(/[\r\n]+/g, " "),
     (c.nextAction || "").replace(/[\r\n]+/g, " ")
   ]);
@@ -210,6 +214,7 @@ function renderTable(rows) {
       <td>${escapeHtml(c.name)}</td>
       <td>Tier ${c.tier}</td>
       <td>${c.lastTouch ? prettyDate(c.lastTouch) : "—"}</td>
+      <td>${c.nextTouch ? prettyDate(c.nextTouch) : "—"}</td>
       <td>${c.nextAction ? escapeHtml(c.nextAction) : "—"}</td>
       <td>
         <button class="touchBtn">Touched</button>
@@ -267,6 +272,7 @@ function renderToday(rows) {
           <div class="pills">
             <span class="${duePillClass}">${dueText}</span>
             <span class="pill">Tier ${c.tier} • ${info.cadence}d</span>
+            ${c.nextTouch ? `<span class="pill">Next: ${prettyDate(c.nextTouch)}</span>` : ""}
             ${hasToDo ? `<span class="pill warn">To Do</span>` : ""}
           </div>
         </div>
@@ -324,6 +330,7 @@ function makeBucketItem(c) {
       <div class="pills">
         <span class="${duePillClass}">${dueText}</span>
         ${c.tier !== 0 ? `<span class="pill">${info.cadence}d cadence</span>` : ""}
+        ${c.nextTouch ? `<span class="pill">Next: ${prettyDate(c.nextTouch)}</span>` : ""}
         ${c.nextAction ? `<span class="pill warn">To Do</span>` : ""}
       </div>
     </div>
@@ -395,6 +402,7 @@ function renderTierPage() {
           <div class="pills">
             <span class="${duePillClass}">${dueText}</span>
             ${tier !== 0 ? `<span class="pill">${info.cadence}d cadence</span>` : `<span class="pill">Prospect</span>`}
+            ${c.nextTouch ? `<span class="pill">Next: ${prettyDate(c.nextTouch)}</span>` : ""}
             ${hasToDo ? `<span class="pill warn">To Do</span>` : ""}
           </div>
         </div>
@@ -465,6 +473,7 @@ function makeClientListItem(c) {
         <div class="pills">
           <span class="${duePillClass}">${dueText}</span>
           ${c.tier !== 0 ? `<span class="pill">${info.cadence}d cadence</span>` : `<span class="pill">Prospect</span>`}
+          ${c.nextTouch ? `<span class="pill">Next: ${prettyDate(c.nextTouch)}</span>` : ""}
           ${hasToDo ? `<span class="pill warn">To Do</span>` : ""}
         </div>
       </div>
@@ -544,6 +553,7 @@ function openEdit(c) {
   byId("editContact").value = c.contact || "";
   byId("editNotes").value = c.notes || "";
   byId("editNextAction").value = c.nextAction || "";
+  byId("editNextTouch").value = c.nextTouch || "";
   byId("editLastTouch").value = c.lastTouch || "";
 
   editDialog.showModal();
@@ -616,7 +626,8 @@ function normalizeClient(c) {
     contact: String(c.contact || "").trim(),
     notes: String(c.notes || "").trim(),
     nextAction: String(c.nextAction || "").trim(),
-    lastTouch: c.lastTouch ? String(c.lastTouch).trim() : ""
+    lastTouch: c.lastTouch ? String(c.lastTouch).trim() : "",
+    nextTouch: c.nextTouch ? String(c.nextTouch).trim() : ""
   };
 }
 
@@ -634,7 +645,8 @@ function ensureClientShape(c) {
     contact: c.contact != null ? String(c.contact).trim() : "",
     notes: c.notes != null ? String(c.notes).trim() : "",
     nextAction: c.nextAction != null ? String(c.nextAction).trim() : "",
-    lastTouch: c.lastTouch != null && c.lastTouch !== "" ? String(c.lastTouch).trim() : ""
+    lastTouch: c.lastTouch != null && c.lastTouch !== "" ? String(c.lastTouch).trim() : "",
+    nextTouch: c.nextTouch != null && c.nextTouch !== "" ? String(c.nextTouch).trim() : ""
   };
 }
 
