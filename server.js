@@ -125,7 +125,9 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
 
-app.use(express.static(__dirname));
+// In development, disable caching so CSS/JS changes show immediately
+const staticOpts = process.env.NODE_ENV === "production" ? {} : { maxAge: 0, etag: false, lastModified: false, setHeaders: (res) => res.set("Cache-Control", "no-store, no-cache, must-revalidate") };
+app.use(express.static(__dirname, staticOpts));
 
 app.listen(PORT, HOST, () => {
   console.log(`Client Command Center running at http://localhost:${PORT}`);

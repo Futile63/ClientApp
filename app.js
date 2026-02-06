@@ -80,6 +80,7 @@ function initEvents() {
       const nameEl = byId("name");
       const tierEl = byId("tier");
       const contactEl = byId("contact");
+      const phoneEl = byId("phone");
       const notesEl = byId("notes");
 
       const name = (nameEl?.value ?? "").trim();
@@ -90,6 +91,7 @@ function initEvents() {
         name,
         tier: Number(tierEl?.value ?? 0),
         contact: (contactEl?.value ?? "").trim(),
+        phone: (phoneEl?.value ?? "").trim(),
         notes: (notesEl?.value ?? "").trim(),
         nextAction: "",
         lastTouch: "", // YYYY-MM-DD
@@ -123,6 +125,7 @@ function initEvents() {
       c.name = (byId("editName")?.value ?? "").trim();
       c.tier = Number(byId("editTier")?.value ?? c.tier);
       c.contact = (byId("editContact")?.value ?? "").trim();
+      c.phone = (byId("editPhone")?.value ?? "").trim();
       c.notes = (byId("editNotes")?.value ?? "").trim();
       c.nextAction = (byId("editNextAction")?.value ?? "").trim();
       const nextTouchVal = (byId("editNextTouch")?.value ?? "").trim();
@@ -159,11 +162,12 @@ function exportDownloadJson() {
 }
 
 function exportDownloadCsv() {
-  const headers = ["Name", "Tier", "Contact", "Last Touch", "Next Touch", "Notes", "To Do"];
+  const headers = ["Name", "Tier", "Contact", "Phone", "Last Touch", "Next Touch", "Notes", "To Do"];
   const rows = state.clients.map((c) => [
     c.name,
     c.tier,
     c.contact || "",
+    c.phone || "",
     c.lastTouch || "",
     c.nextTouch || "",
     (c.notes || "").replace(/[\r\n]+/g, " "),
@@ -196,12 +200,83 @@ function render() {
 // =========================
 // DASHBOARD RENDER
 // =========================
+const DASHBOARD_DUE_WITHIN_DAYS = 10;
+
+function needsAttention(c, info) {
+  const tier = normalizeTier(c.tier);
+  if (tier === 0) return !!(c.nextAction && c.nextAction.trim());
+  return info.overdueDays > 0 || !c.lastTouch || info.daysUntilDue <= DASHBOARD_DUE_WITHIN_DAYS;
+}
+
 function renderDashboard() {
   const rows = filteredClients(state.clients, state.query);
+  const dashboardRows = rows.filter((c) => {
+    const info = attentionInfo(c);
+    return needsAttention(c, info);
+  });
 
-  renderToday(rows);
-  renderBuckets(rows);
-  renderTable(rows);
+  const todaySummaryEl = byId("todaySummary");
+  if (todaySummaryEl) {
+    let overdue = 0, neverTouched = 0, dueSoon = 0;
+    dashboardRows.forEach((c) => {
+      const info = attentionInfo(c);
+      const tier = normalizeTier(c.tier);
+      if (tier !== 0 && info.overdueDays > 0) overdue++;
+      else if (tier !== 0 && !c.lastTouch) neverTouched++;
+      else dueSoon++;
+    });
+    const total = dashboardRows.length;
+    if (total === 0) {
+      todaySummaryEl.textContent = "No clients need attention right now.";
+    } else {
+      const parts = [];
+      if (overdue) parts.push(`${overdue} overdue`);
+      if (neverTouched) parts.push(`${neverTouched} never touched`);
+      if (dueSoon) parts.push(`${dueSoon} due soon`);
+      todaySummaryEl.textContent = `${total} need attention (${parts.join(", ")}).`;
+    }
+  }
+
+  renderToday(dashboardRows);
+  renderTouchedThisWeek(rows);
+}
+
+function renderTouchedThisWeek(allRows) {
+  const section = byId("touchedThisWeekSection");
+  const listEl = byId("touchedThisWeekList");
+  if (!section || !listEl) return;
+  const today = todayISO();
+  const touched = allRows
+    .filter((c) => c.lastTouch && daysBetween(c.lastTouch, today) >= 0 && daysBetween(c.lastTouch, today) <= 6)
+    .sort((a, b) => (b.lastTouch > a.lastTouch ? 1 : -1));
+  if (touched.length === 0) {
+    section.style.display = "none";
+    return;
+  }
+  section.style.display = "block";
+  listEl.innerHTML = "";
+  for (const c of touched) {
+    const li = document.createElement("li");
+    li.className = `todayItem tier-${normalizeTier(c.tier)}`;
+    li.innerHTML = `
+      <div class="todayItemRow">
+        <div class="todayLeft">
+          <div class="todayName">${escapeHtml(c.name)}</div>
+          <div class="bucketMeta">${(c.contact || c.phone) ? `<span>${contactPhoneHtml(c)}</span>` : ""}</div>
+          <div class="actions">
+            <button class="touchBtn">Touched Today</button>
+            <button class="editBtn">Edit</button>
+          </div>
+        </div>
+        <div class="todayRight">
+          <span class="pill">Last: ${prettyDate(c.lastTouch)}</span>
+        </div>
+      </div>
+    `;
+    li.querySelector(".touchBtn")?.addEventListener("click", () => touch(c.id));
+    li.querySelector(".editBtn")?.addEventListener("click", () => openEdit(c));
+    listEl.appendChild(li);
+  }
 }
 
 function renderTable(rows) {
@@ -210,6 +285,7 @@ function renderTable(rows) {
 
   for (const c of rows) {
     const tr = document.createElement("tr");
+    tr.className = `tier-${normalizeTier(c.tier)}`;
     tr.innerHTML = `
       <td>${escapeHtml(c.name)}</td>
       <td>Tier ${c.tier}</td>
@@ -238,14 +314,13 @@ function renderToday(rows) {
       if (b.info.score !== a.info.score) return b.info.score - a.info.score;
       if (b.info.overdueDays !== a.info.overdueDays) return b.info.overdueDays - a.info.overdueDays;
       return a.c.name.localeCompare(b.c.name);
-    })
-    .slice(0, 10);
+    });
 
   todayList.innerHTML = "";
 
   for (const { c, info } of ranked) {
     const li = document.createElement("li");
-    li.className = "todayItem";
+    li.className = `todayItem tier-${normalizeTier(c.tier)}`;
 
     const { duePillClass, dueText } = dueBadge(c, info);
     const hasNotes = c.notes && c.notes.trim();
@@ -255,10 +330,7 @@ function renderToday(rows) {
       <div class="todayItemRow">
         <div class="todayLeft">
           <div class="todayName">${escapeHtml(c.name)}</div>
-          <div class="bucketMeta">
-            <span>Last: ${c.lastTouch ? prettyDate(c.lastTouch) : "Never"}</span>
-            ${c.contact ? `<span>${escapeHtml(c.contact)}</span>` : ""}
-          </div>
+          <div class="bucketMeta">${(c.contact || c.phone) ? `<span>${contactPhoneHtml(c)}</span>` : ""}</div>
           <div class="actions">
             <button class="touchBtn">Touched Today</button>
             <button class="editBtn">Edit</button>
@@ -272,8 +344,11 @@ function renderToday(rows) {
           <div class="pills">
             <span class="${duePillClass}">${dueText}</span>
             <span class="pill">Tier ${c.tier} • ${info.cadence}d</span>
-            ${c.nextTouch ? `<span class="pill">Next: ${prettyDate(c.nextTouch)}</span>` : ""}
             ${hasToDo ? `<span class="pill warn">To Do</span>` : ""}
+          </div>
+          <div class="touchDates">
+            <span>Last: ${c.lastTouch ? prettyDate(c.lastTouch) : "Never"}</span>
+            <span>Next: ${c.nextTouch ? prettyDate(c.nextTouch) : '<span class="nextNeedSchedule">Need to schedule</span>'}</span>
           </div>
         </div>
       </div>
@@ -322,22 +397,22 @@ function makeBucketItem(c) {
   const { duePillClass, dueText } = dueBadge(c, info);
 
   const li = document.createElement("li");
-  li.className = "bucketItem";
+  li.className = `bucketItem tier-${normalizeTier(c.tier)}`;
 
   li.innerHTML = `
     <div class="bucketItemTop">
-      <div class="bucketName">${escapeHtml(c.name)}</div>
-      <div class="pills">
-        <span class="${duePillClass}">${dueText}</span>
-        ${c.tier !== 0 ? `<span class="pill">${info.cadence}d cadence</span>` : ""}
-        ${c.nextTouch ? `<span class="pill">Next: ${prettyDate(c.nextTouch)}</span>` : ""}
-        ${c.nextAction ? `<span class="pill warn">To Do</span>` : ""}
+      <div class="bucketName">${escapeHtml(c.name)}${(c.contact || c.phone) ? ` <span class="bucketMeta">${contactPhoneHtml(c)}</span>` : ""}</div>
+      <div class="bucketRight">
+        <div class="pills">
+          <span class="${duePillClass}">${dueText}</span>
+          ${c.tier !== 0 ? `<span class="pill">${info.cadence}d cadence</span>` : ""}
+          ${c.nextAction ? `<span class="pill warn">To Do</span>` : ""}
+        </div>
+        <div class="touchDates">
+          <span>Last: ${c.lastTouch ? prettyDate(c.lastTouch) : "Never"}</span>
+          <span>Next: ${c.nextTouch ? prettyDate(c.nextTouch) : '<span class="nextNeedSchedule">Need to schedule</span>'}</span>
+        </div>
       </div>
-    </div>
-
-    <div class="bucketMeta">
-      <span>Last: ${c.lastTouch ? prettyDate(c.lastTouch) : "Never"}</span>
-      ${c.contact ? `<span>${escapeHtml(c.contact)}</span>` : ""}
     </div>
 
     <div class="actions">
@@ -379,16 +454,13 @@ function renderTierPage() {
     const hasToDo = c.nextAction && c.nextAction.trim();
 
     const li = document.createElement("li");
-    li.className = "todayItem";
+    li.className = `todayItem tier-${normalizeTier(c.tier)}`;
 
     li.innerHTML = `
       <div class="todayItemRow">
         <div class="todayLeft">
           <div class="todayName">${escapeHtml(c.name)}</div>
-          <div class="bucketMeta">
-            <span>Last: ${c.lastTouch ? prettyDate(c.lastTouch) : "Never"}</span>
-            ${c.contact ? `<span>${escapeHtml(c.contact)}</span>` : ""}
-          </div>
+          <div class="bucketMeta">${(c.contact || c.phone) ? `<span>${contactPhoneHtml(c)}</span>` : ""}</div>
           <div class="actions">
             <button class="touchBtn">Touched Today</button>
             <button class="editBtn">Edit</button>
@@ -402,8 +474,11 @@ function renderTierPage() {
           <div class="pills">
             <span class="${duePillClass}">${dueText}</span>
             ${tier !== 0 ? `<span class="pill">${info.cadence}d cadence</span>` : `<span class="pill">Prospect</span>`}
-            ${c.nextTouch ? `<span class="pill">Next: ${prettyDate(c.nextTouch)}</span>` : ""}
             ${hasToDo ? `<span class="pill warn">To Do</span>` : ""}
+          </div>
+          <div class="touchDates">
+            <span>Last: ${c.lastTouch ? prettyDate(c.lastTouch) : "Never"}</span>
+            <span>Next: ${c.nextTouch ? prettyDate(c.nextTouch) : '<span class="nextNeedSchedule">Need to schedule</span>'}</span>
           </div>
         </div>
       </div>
@@ -449,16 +524,13 @@ function makeClientListItem(c) {
   const hasToDo = c.nextAction && c.nextAction.trim();
 
   const li = document.createElement("li");
-  li.className = "todayItem";
+  li.className = `todayItem tier-${normalizeTier(c.tier)}`;
 
   li.innerHTML = `
     <div class="todayItemRow">
       <div class="todayLeft">
         <div class="todayName">${escapeHtml(c.name)}</div>
-        <div class="bucketMeta">
-          <span>Last: ${c.lastTouch ? prettyDate(c.lastTouch) : "Never"}</span>
-          ${c.contact ? `<span>${escapeHtml(c.contact)}</span>` : ""}
-        </div>
+        <div class="bucketMeta">${(c.contact || c.phone) ? `<span>${contactPhoneHtml(c)}</span>` : ""}</div>
         <div class="actions">
           <button class="touchBtn">Touched Today</button>
           <button class="editBtn">Edit</button>
@@ -473,8 +545,11 @@ function makeClientListItem(c) {
         <div class="pills">
           <span class="${duePillClass}">${dueText}</span>
           ${c.tier !== 0 ? `<span class="pill">${info.cadence}d cadence</span>` : `<span class="pill">Prospect</span>`}
-          ${c.nextTouch ? `<span class="pill">Next: ${prettyDate(c.nextTouch)}</span>` : ""}
           ${hasToDo ? `<span class="pill warn">To Do</span>` : ""}
+        </div>
+        <div class="touchDates">
+          <span>Last: ${c.lastTouch ? prettyDate(c.lastTouch) : "Never"}</span>
+          <span>Next: ${c.nextTouch ? prettyDate(c.nextTouch) : '<span class="nextNeedSchedule">Need to schedule</span>'}</span>
         </div>
       </div>
     </div>
@@ -551,6 +626,7 @@ function openEdit(c) {
   byId("editName").value = c.name;
   byId("editTier").value = String(c.tier);
   byId("editContact").value = c.contact || "";
+  byId("editPhone").value = c.phone || "";
   byId("editNotes").value = c.notes || "";
   byId("editNextAction").value = c.nextAction || "";
   byId("editNextTouch").value = c.nextTouch || "";
@@ -624,6 +700,7 @@ function normalizeClient(c) {
     name: String(c.name || "").trim(),
     tier: normalizeTier(c.tier),
     contact: String(c.contact || "").trim(),
+    phone: String(c.phone || "").trim(),
     notes: String(c.notes || "").trim(),
     nextAction: String(c.nextAction || "").trim(),
     lastTouch: c.lastTouch ? String(c.lastTouch).trim() : "",
@@ -643,6 +720,7 @@ function ensureClientShape(c) {
     name: c.name != null ? String(c.name).trim() : "",
     tier: normalizeTier(c.tier),
     contact: c.contact != null ? String(c.contact).trim() : "",
+    phone: c.phone != null ? String(c.phone).trim() : "",
     notes: c.notes != null ? String(c.notes).trim() : "",
     nextAction: c.nextAction != null ? String(c.nextAction).trim() : "",
     lastTouch: c.lastTouch != null && c.lastTouch !== "" ? String(c.lastTouch).trim() : "",
@@ -723,7 +801,7 @@ function filteredClients(clients, q) {
   if (!q) return clients;
 
   return clients.filter(c => {
-    const hay = `${c.name} ${c.contact} ${c.notes} ${c.nextAction} tier ${c.tier}`.toLowerCase();
+    const hay = `${c.name} ${c.contact} ${c.phone || ""} ${c.notes} ${c.nextAction} tier ${c.tier}`.toLowerCase();
     return hay.includes(q);
   });
 }
@@ -757,6 +835,28 @@ function escapeHtml(str) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+}
+
+/** Contact/phone with click-to-call and click-to-email where applicable */
+function contactPhoneHtml(c) {
+  const contact = (c.contact || "").trim();
+  const phone = (c.phone || "").trim();
+  if (!contact && !phone) return "";
+  const parts = [];
+  if (contact) {
+    if (contact.includes("@")) {
+      const safe = escapeHtml(contact);
+      const href = "mailto:" + encodeURIComponent(contact);
+      parts.push(`<a href="${href}" class="contactLink">${safe}</a>`);
+    } else {
+      parts.push(escapeHtml(contact));
+    }
+  }
+  if (phone) {
+    const telHref = "tel:" + phone.replace(/\s/g, "").replace(/[^\d+()-]/g, "") || phone;
+    parts.push(`<a href="${telHref}" class="contactLink">${escapeHtml(phone)}</a>`);
+  }
+  return parts.join(" · ");
 }
 
 // =========================

@@ -19,20 +19,18 @@
   <!-- HEADER -->
   <!-- ========================= -->
   <header>
-    <h1 id="tierTitle">Tier</h1>
-    <p class="sub" id="tierSubtitle"></p>
-
-<!-- ========================= -->
-<!-- NAV -->
-<!-- ========================= -->
-<nav class="tierNav">
+    <div class="headerBrand">
+      <h1 id="tierTitle">Tier</h1>
+      <p class="sub" id="tierSubtitle"></p>
+    </div>
+    <nav class="tierNav">
   <a class="tierNavLink" href="/">← Dashboard</a>
-  <a class="tierNavLink" href="tier?tier=3">Tier 3</a>
-  <a class="tierNavLink" href="tier?tier=2">Tier 2</a>
-  <a class="tierNavLink" href="tier?tier=1">Tier 1</a>
-  <a class="tierNavLink" href="tier?tier=0">Tier 0 / Prospect</a>
+  <a class="tierNavLink tier-3" href="tier?tier=3">Tier 3</a>
+  <a class="tierNavLink tier-2" href="tier?tier=2">Tier 2</a>
+  <a class="tierNavLink tier-1" href="tier?tier=1">Tier 1</a>
+  <a class="tierNavLink tier-0" href="tier?tier=0">Tier 0 / Prospect</a>
   <a class="tierNavLink" href="client-list">Client List</a>
-  <a class="tierNavLink" href="/logout" style="margin-left: auto;">Logout</a>
+  <a class="tierNavLink tierNavLink--right" href="/logout">Logout</a>
 </nav>
 
 
@@ -85,6 +83,11 @@
       </label>
 
       <label>
+        Phone
+        <input id="editPhone" type="tel" placeholder="555-123-4567" />
+      </label>
+
+      <label>
         Notes
         <textarea id="editNotes" rows="2"></textarea>
       </label>
@@ -92,6 +95,7 @@
       <label>
         Next touch
         <input type="date" id="editNextTouch" />
+        <span class="fieldHint">Set when you plan to follow up.</span>
       </label>
 
       <label>

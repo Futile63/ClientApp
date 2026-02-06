@@ -9,17 +9,18 @@
 
 <body>
   <header>
-    <h1>Client List</h1>
-    <p class="sub">Add and manage clients by tier. Back up your data regularly.</p>
-
+    <div class="headerBrand">
+      <h1>Client List</h1>
+      <p class="sub">Add and manage clients by tier. Back up your data regularly.</p>
+    </div>
     <nav class="tierNav" aria-label="Navigation">
       <a class="tierNavLink" href="/">← Dashboard</a>
-      <a class="tierNavLink" href="tier?tier=3">Tier 3</a>
-      <a class="tierNavLink" href="tier?tier=2">Tier 2</a>
-      <a class="tierNavLink" href="tier?tier=1">Tier 1</a>
-      <a class="tierNavLink" href="tier?tier=0">Tier 0 / Prospect</a>
+      <a class="tierNavLink tier-3" href="tier?tier=3">Tier 3</a>
+      <a class="tierNavLink tier-2" href="tier?tier=2">Tier 2</a>
+      <a class="tierNavLink tier-1" href="tier?tier=1">Tier 1</a>
+      <a class="tierNavLink tier-0" href="tier?tier=0">Tier 0 / Prospect</a>
       <a class="tierNavLink" href="client-list">Client List</a>
-      <a class="tierNavLink" href="/logout" style="margin-left: auto;">Logout</a>
+      <a class="tierNavLink tierNavLink--right" href="/logout">Logout</a>
     </nav>
   </header>
 
@@ -46,8 +47,14 @@
         <div class="row">
           <label>
             Primary Contact
-            <input id="contact" placeholder="Name / Email / Phone" />
+            <input id="contact" placeholder="Name or email" />
           </label>
+          <label>
+            Phone
+            <input id="phone" type="tel" placeholder="555-123-4567" />
+          </label>
+        </div>
+        <div class="row">
           <label>
             Notes
             <input id="notes" placeholder="Quick note..." />
@@ -64,7 +71,7 @@
         <input id="search" placeholder="Search..." />
       </div>
       <div class="row row-tight backupRow">
-        <span class="hint">Backup your data (for work, back up regularly):</span>
+        <span class="hint">Back up weekly so you never lose history.</span>
         <div class="backupBtns">
           <button type="button" id="exportJsonBtn" class="ghost">Download JSON</button>
           <button type="button" id="exportCsvBtn" class="ghost">Download CSV</button>
@@ -105,8 +112,9 @@
         </select>
       </label>
       <label>Primary Contact <input id="editContact" /></label>
+      <label>Phone <input id="editPhone" type="tel" placeholder="555-123-4567" /></label>
       <label>Notes <textarea id="editNotes" rows="2"></textarea></label>
-      <label>Next touch <input type="date" id="editNextTouch" /></label>
+      <label>Next touch <input type="date" id="editNextTouch" /><span class="fieldHint">Set when you plan to follow up.</span></label>
       <label>To Do <textarea id="editNextAction" rows="2"></textarea></label>
       <label>Last touch <input type="date" id="editLastTouch" /></label>
       <div class="row row-right">

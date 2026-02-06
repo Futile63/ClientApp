@@ -9,6 +9,8 @@
   --muted: #9ca3af;
   --accent: #60a5fa;
   --danger: #f87171;
+  --nav-btn: #1e293b;
+  --nav-btn-border: rgba(255,255,255,0.08);
 }
 
 * {
@@ -20,6 +22,16 @@ body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background: linear-gradient(180deg, #020617, #0f172a);
   color: var(--text);
+  min-height: 100vh;
+}
+
+header {
+  width: 100%;
+  padding-left: 24px;
+  padding-right: 24px;
+  background: linear-gradient(165deg, rgba(30,41,59,0.95) 0%, rgba(15,23,42,0.98) 50%, rgba(15,23,42,1) 100%);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 1px 0 0 rgba(255,255,255,0.03), 0 4px 24px rgba(0,0,0,0.2);
 }
 
 /* =========================
@@ -71,33 +83,75 @@ textarea::placeholder {
 }
 
 button {
-  padding: 10px 14px;
-  border-radius: 10px;
+  padding: 10px 18px;
+  border-radius: 12px;
   border: 1px solid var(--border);
-  background: rgba(255,255,255,0.05);
+  background: rgba(255,255,255,0.06);
   color: var(--text);
   cursor: pointer;
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
 }
 
 button:hover {
+  border-color: rgba(96,165,250,0.5);
+  background: rgba(255,255,255,0.08);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+/* Primary action (Touched Today, Save, Add) */
+button.touchBtn,
+button[type="submit"]:not(.ghost) {
+  background: rgba(96,165,250,0.12);
+  border-color: rgba(96,165,250,0.4);
+  color: var(--accent);
+}
+
+button.touchBtn:hover,
+button[type="submit"]:not(.ghost):hover {
+  background: rgba(96,165,250,0.2);
   border-color: var(--accent);
+  box-shadow: 0 4px 16px rgba(96,165,250,0.15);
 }
 
 button.danger {
-  border-color: rgba(248,113,113,0.5);
+  border-color: rgba(248,113,113,0.4);
   color: var(--danger);
+  background: rgba(248,113,113,0.08);
+}
+
+button.danger:hover {
+  border-color: var(--danger);
+  background: rgba(248,113,113,0.15);
+  box-shadow: 0 2px 12px rgba(248,113,113,0.12);
 }
 
 button.ghost {
   background: transparent;
+  border-color: transparent;
+}
+
+button.ghost:hover {
+  background: rgba(255,255,255,0.05);
+  border-color: var(--border);
 }
 
 /* =========================
    HEADER
    ========================= */
 header {
-  padding: 20px;
-  border-bottom: 1px solid var(--border);
+  padding: 24px 24px 20px;
+  box-sizing: border-box;
+}
+
+.headerBrand {
+  margin-bottom: 4px;
 }
 
 header .sub {
@@ -110,6 +164,8 @@ header .sub {
    MAIN LAYOUT
    ========================= */
 main {
+  width: 100%;
+  max-width: none;
   padding: 20px;
   display: grid;
   gap: 20px;
@@ -173,6 +229,28 @@ label {
   font-size: 13px;
 }
 
+.contactLink {
+  color: var(--accent);
+  text-decoration: none;
+}
+.contactLink:hover {
+  text-decoration: underline;
+}
+
+.todaySummary {
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 6px;
+  margin-bottom: 8px;
+}
+
+.fieldHint {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
 /* =========================
    TODAY LIST
    ========================= */
@@ -189,7 +267,27 @@ label {
   border-radius: 14px;
   padding: 12px;
   background: rgba(255,255,255,0.03);
+  border-left-width: 4px;
 }
+
+/* Tier color coding - T3 blue, T2 green (distinct from blue), T1 amber, T0 slate */
+.todayItem.tier-3,
+.bucketItem.tier-3,
+tr.tier-3 { border-left-color: #60a5fa; }
+.todayItem.tier-2,
+.bucketItem.tier-2,
+tr.tier-2 { border-left-color: #22c55e; }
+.todayItem.tier-1,
+.bucketItem.tier-1,
+tr.tier-1 { border-left-color: #f59e0b; }
+.todayItem.tier-0,
+.bucketItem.tier-0,
+tr.tier-0 { border-left-color: #94a3b8; }
+
+#bucketWrapT3.cardInner { border-left: 4px solid #60a5fa; }
+#bucketWrapT2.cardInner { border-left: 4px solid #22c55e; }
+#bucketWrapT1.cardInner { border-left: 4px solid #f59e0b; }
+#bucketWrapT0.cardInner { border-left: 4px solid #94a3b8; }
 
 .todayItemRow {
   display: flex;
@@ -201,6 +299,13 @@ label {
 .todayLeft {
   min-width: 0;
   flex-shrink: 0;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
 }
 
 .todayCenter {
@@ -222,6 +327,27 @@ label {
 
 .todayRight {
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.touchDates {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.touchDates span {
+  white-space: nowrap;
+}
+
+.nextNeedSchedule {
+  font-weight: 700;
+  color: var(--danger);
 }
 
 .todayTopRow {
@@ -339,7 +465,25 @@ label {
 .bucketItemTop {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.bucketRight {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.bucketRight .touchDates {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.bucketRight .touchDates span {
+  white-space: nowrap;
 }
 
 .bucketName {
@@ -365,6 +509,10 @@ table {
   width: 100%;
   border-collapse: collapse;
   font-size: 14px;
+}
+
+tbody tr {
+  border-left: 4px solid var(--border);
 }
 
 th, td {
@@ -405,21 +553,42 @@ dialog::backdrop {
    ========================= */
 .tierNav {
   display: flex;
+  align-items: center;
   gap: 10px;
   flex-wrap: wrap;
   margin-top: 12px;
+  width: 100%;
+}
+
+.tierNavLink--right {
+  margin-left: auto;
 }
 
 .tierNavLink {
   text-decoration: none;
   color: var(--text);
-  border: 1px solid var(--border);
-  background: rgba(255,255,255,0.03);
-  padding: 8px 12px;
+  border: 1px solid var(--nav-btn-border);
+  background: var(--nav-btn);
+  padding: 10px 16px;
   border-radius: 999px;
   font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
 
 .tierNavLink:hover {
-  border-color: var(--accent);
+  border-color: rgba(255,255,255,0.15);
+  background: rgba(30,41,59,0.9);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.25);
 }
+
+/* Tier-colored nav buttons */
+.tierNavLink.tier-3 { background: rgba(96,165,250,0.2); border-color: rgba(96,165,250,0.5); color: #93c5fd; }
+.tierNavLink.tier-3:hover { background: rgba(96,165,250,0.3); border-color: #60a5fa; }
+.tierNavLink.tier-2 { background: rgba(34,197,94,0.2); border-color: rgba(34,197,94,0.5); color: #86efac; }
+.tierNavLink.tier-2:hover { background: rgba(34,197,94,0.3); border-color: #22c55e; }
+.tierNavLink.tier-1 { background: rgba(245,158,11,0.2); border-color: rgba(245,158,11,0.5); color: #fcd34d; }
+.tierNavLink.tier-1:hover { background: rgba(245,158,11,0.3); border-color: #f59e0b; }
+.tierNavLink.tier-0 { background: rgba(148,163,184,0.2); border-color: rgba(148,163,184,0.4); color: #cbd5e1; }
+.tierNavLink.tier-0:hover { background: rgba(148,163,184,0.3); border-color: #94a3b8; }

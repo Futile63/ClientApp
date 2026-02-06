@@ -19,19 +19,17 @@
   <!-- HEADER -->
   <!-- ========================= -->
   <header>
-    <h1>Client Command Center</h1>
-    <p class="sub">Track client touchpoints and reach out on schedule.</p>
-
-    <!-- ========================= -->
-    <!-- NAV (TIER PAGES) -->
-    <!-- ========================= -->
+    <div class="headerBrand">
+      <h1>Client Command Center</h1>
+      <p class="sub">Track client touchpoints and reach out on schedule.</p>
+    </div>
     <nav class="tierNav" aria-label="Tier navigation">
-      <a class="tierNavLink" href="tier?tier=3">Tier 3</a>
-      <a class="tierNavLink" href="tier?tier=2">Tier 2</a>
-      <a class="tierNavLink" href="tier?tier=1">Tier 1</a>
-      <a class="tierNavLink" href="tier?tier=0">Tier 0 / Prospect</a>
+      <a class="tierNavLink tier-3" href="tier?tier=3">Tier 3</a>
+      <a class="tierNavLink tier-2" href="tier?tier=2">Tier 2</a>
+      <a class="tierNavLink tier-1" href="tier?tier=1">Tier 1</a>
+      <a class="tierNavLink tier-0" href="tier?tier=0">Tier 0 / Prospect</a>
       <a class="tierNavLink" href="client-list">Client List</a>
-      <a class="tierNavLink" href="/logout" style="margin-left: auto;">Logout</a>
+      <a class="tierNavLink tierNavLink--right" href="/logout">Logout</a>
     </nav>
   </header>
 
@@ -46,85 +44,18 @@
     <section class="card" id="todaySection">
       <div class="row row-tight">
         <h2>Today</h2>
-        <div class="hint">Ranked by tier cadence + overdue + next actions</div>
+        <div class="hint">Needs attention or due within 10 days • color = tier</div>
       </div>
+      <div id="todaySummary" class="todaySummary" aria-live="polite"></div>
       <ul id="todayList" class="todayList"></ul>
     </section>
 
-    <!-- ========================= -->
-    <!-- BUCKETS (TIER GROUPING) -->
-    <!-- ========================= -->
-    <section class="card" id="bucketsSection">
+    <section class="card" id="touchedThisWeekSection" style="display: none;">
       <div class="row row-tight">
-        <h2>Buckets</h2>
-        <div class="hint">Grouped by tier • shows last touch + days until due</div>
+        <h2>Touched this week</h2>
+        <div class="hint">Already reached out — avoid double-touching</div>
       </div>
-
-      <div class="bucketGrid">
-
-        <!-- ===== Tier 3 ===== -->
-        <div class="bucket cardInner" id="bucketWrapT3">
-          <div class="bucketHeader">
-            <h3><a href="tier?tier=3" class="bucketLink">Tier 3</a></h3>
-            <span class="bucketCount" id="countT3">0</span>
-          </div>
-          <ul class="bucketList" id="bucketT3"></ul>
-        </div>
-
-        <!-- ===== Tier 2 ===== -->
-        <div class="bucket cardInner" id="bucketWrapT2">
-          <div class="bucketHeader">
-            <h3><a href="tier?tier=2" class="bucketLink">Tier 2</a></h3>
-            <span class="bucketCount" id="countT2">0</span>
-          </div>
-          <ul class="bucketList" id="bucketT2"></ul>
-        </div>
-
-        <!-- ===== Tier 1 ===== -->
-        <div class="bucket cardInner" id="bucketWrapT1">
-          <div class="bucketHeader">
-            <h3><a href="tier?tier=1" class="bucketLink">Tier 1</a></h3>
-            <span class="bucketCount" id="countT1">0</span>
-          </div>
-          <ul class="bucketList" id="bucketT1"></ul>
-        </div>
-
-        <!-- ===== Tier 0 / Prospect ===== -->
-        <div class="bucket cardInner" id="bucketWrapT0">
-          <div class="bucketHeader">
-            <h3><a href="tier?tier=0" class="bucketLink">Tier 0 / Prospect</a></h3>
-            <span class="bucketCount" id="countT0">0</span>
-          </div>
-          <ul class="bucketList" id="bucketT0"></ul>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- ========================= -->
-    <!-- CLIENTS TABLE (LEGACY / OPTIONAL) -->
-    <!-- ========================= -->
-    <section class="card" id="clientsTableSection">
-      <div class="row row-tight">
-        <h2>Clients</h2>
-        <input id="search" placeholder="Search..." />
-      </div>
-
-      <div class="tableWrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Client</th>
-              <th>Tier</th>
-              <th>Last Touch</th>
-              <th>Next Touch</th>
-              <th>To Do</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody id="clientList"></tbody>
-        </table>
-      </div>
+      <ul id="touchedThisWeekList" class="todayList"></ul>
     </section>
 
   </main>
@@ -159,6 +90,11 @@
       </label>
 
       <label>
+        Phone
+        <input id="editPhone" type="tel" placeholder="555-123-4567" />
+      </label>
+
+      <label>
         Notes
         <textarea id="editNotes" rows="2"></textarea>
       </label>
@@ -166,6 +102,7 @@
       <label>
         Next touch
         <input type="date" id="editNextTouch" />
+        <span class="fieldHint">Set when you plan to follow up.</span>
       </label>
 
       <label>
