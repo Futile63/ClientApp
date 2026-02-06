@@ -671,9 +671,11 @@ function dueBadge(c, info) {
     return { duePillClass: "pill", dueText: "Prospect" };
   }
 
-  // Color: red (needs first touch, overdue, due today, or ≤7d), yellow (8–14d), green (15+d)
+  // Color: Scheduled = green; needs first touch/overdue/due soon = red; 8–14d = yellow; 15+d = green
   let duePillClass = "pill";
-  if (!c.lastTouch || info.overdueDays > 0 || info.daysUntilDue <= 7) {
+  if (!c.lastTouch && c.nextTouch) {
+    duePillClass = "pill pillDueGreen"; // Scheduled
+  } else if (!c.lastTouch || info.overdueDays > 0 || info.daysUntilDue <= 7) {
     duePillClass = "pill pillDueRed";
   } else if (info.daysUntilDue <= 14) {
     duePillClass = "pill pillDueYellow";
