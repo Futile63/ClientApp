@@ -10,7 +10,11 @@ const fs = require("fs");
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 const HOST = "0.0.0.0";
-const DATA_FILE = path.join(__dirname, "data", "clients.json");
+// Optional: set DATA_DIR (e.g. /data) when using a persistent disk so clients.json survives redeploys
+const DATA_DIR = process.env.DATA_DIR && process.env.DATA_DIR.trim()
+  ? path.resolve(process.env.DATA_DIR)
+  : path.join(__dirname, "data");
+const DATA_FILE = path.join(DATA_DIR, "clients.json");
 
 const AUTH_ENABLED =
   process.env.APP_USER && process.env.APP_USER.trim() &&
@@ -83,8 +87,10 @@ function writeClients(clients) {
     const dir = path.dirname(DATA_FILE);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
     fs.writeFileSync(DATA_FILE, JSON.stringify(clients), "utf8");
+    return true;
   } catch (err) {
     console.error("Failed to write clients:", err.message);
+    return false;
   }
 }
 
@@ -98,7 +104,13 @@ app.get("/api/clients", (req, res) => {
 app.post("/api/clients", (req, res) => {
   const body = req.body;
   const list = Array.isArray(body) ? body : [];
-  writeClients(list);
+  if (!Array.isArray(body)) {
+    return res.status(400).json({ error: "Body must be a JSON array of clients." });
+  }
+  const ok = writeClients(list);
+  if (!ok) {
+    return res.status(500).json({ error: "Failed to save clients to disk." });
+  }
   console.log("POST /api/clients → saved", list.length, "clients");
   res.json(list);
 });

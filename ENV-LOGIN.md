@@ -9,6 +9,7 @@ When you set **APP_USER** and **APP_PASSWORD**, the app requires login before an
 | `APP_USER`       | Yes                | Username to sign in. |
 | `APP_PASSWORD`   | Yes                | Password to sign in. |
 | `SESSION_SECRET` | Recommended        | Secret used to sign session cookies. Set a long random string in production. If unset, a default is used (less secure). |
+| `DATA_DIR`       | Optional (Render)   | When set (e.g. `/data`), the app stores `clients.json` in this directory. Use with a Persistent Disk on Render so data survives redeploys. |
 
 - If **both** `APP_USER` and `APP_PASSWORD` are set → **login is required** (redirect to `/login`, API returns 401 when not logged in).
 - If either is missing → **login is disabled** (everyone can access the app). Use this for local/LAN-only use.
@@ -20,16 +21,7 @@ When you set **APP_USER** and **APP_PASSWORD**, the app requires login before an
 $env:APP_USER="your-username"; $env:APP_PASSWORD="your-secure-password"; $env:SESSION_SECRET="long-random-string"; npm start
 ```
 
-**Docker / docker-compose:**  
-Add to `docker-compose.yml` under the service:
-```yaml
-environment:
-  - APP_USER=your-username
-  - APP_PASSWORD=your-secure-password
-  - SESSION_SECRET=long-random-string
-```
-
-**Railway / Render:**  
+**Render (or Railway):**  
 In the dashboard, open your service → **Variables** (or **Environment**) → add `APP_USER`, `APP_PASSWORD`, and `SESSION_SECRET`.
 
 **NAS or Linux:**  

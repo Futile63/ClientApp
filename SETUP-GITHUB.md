@@ -69,7 +69,7 @@ git push -u origin main
 
 ## Part 3: Confirm
 
-- Refresh your repo page on GitHub. You should see all project files (app.js, server.js, Dockerfile, etc.).
+- Refresh your repo page on GitHub. You should see all project files (app.js, server.js, package.json, etc.).
 - `node_modules` and `data/` will **not** be there (they’re in `.gitignore`) — that’s correct.
 
 ---

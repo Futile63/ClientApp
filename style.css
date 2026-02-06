@@ -158,6 +158,16 @@ label {
   color: var(--muted);
 }
 
+.backupRow {
+  margin-top: 12px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.backupBtns {
+  display: flex;
+  gap: 8px;
+}
+
 .hint {
   color: var(--muted);
   font-size: 13px;

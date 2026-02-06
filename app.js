@@ -64,6 +64,7 @@ const state = {
 (async function init() {
   await loadClientsFromServer();
   initEvents();
+  initExportButtons();
   render();
 })();
 
@@ -135,6 +136,48 @@ function initEvents() {
     if (notesTa?.tagName === "TEXTAREA") notesTa.addEventListener("input", () => resizeEditTextarea(notesTa));
     if (todoTa?.tagName === "TEXTAREA") todoTa.addEventListener("input", () => resizeEditTextarea(todoTa));
   }
+}
+
+function initExportButtons() {
+  const jsonBtn = byId("exportJsonBtn");
+  const csvBtn = byId("exportCsvBtn");
+  if (jsonBtn) jsonBtn.addEventListener("click", () => exportDownloadJson());
+  if (csvBtn) csvBtn.addEventListener("click", () => exportDownloadCsv());
+}
+
+function exportDownloadJson() {
+  const blob = new Blob([JSON.stringify(state.clients, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `clients-backup-${todayISO()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportDownloadCsv() {
+  const headers = ["Name", "Tier", "Contact", "Last Touch", "Notes", "To Do"];
+  const rows = state.clients.map((c) => [
+    c.name,
+    c.tier,
+    c.contact || "",
+    c.lastTouch || "",
+    (c.notes || "").replace(/[\r\n]+/g, " "),
+    (c.nextAction || "").replace(/[\r\n]+/g, " ")
+  ]);
+  const escapeCsv = (s) => {
+    const t = String(s);
+    if (/[",\r\n]/.test(t)) return `"${t.replace(/"/g, '""')}"`;
+    return t;
+  };
+  const lines = [headers.map(escapeCsv).join(","), ...rows.map((r) => r.map(escapeCsv).join(","))];
+  const blob = new Blob([lines.join("\r\n")], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `clients-backup-${todayISO()}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 // =========================
@@ -630,12 +673,20 @@ function loadClients() {
 
 function saveAndRender() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state.clients));
-  // Persist to server so iPad and other devices see the same data
   fetch("/api/clients", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(state.clients)
-  }).catch(() => {});
+  })
+    .then((r) => {
+      if (!r.ok) {
+        console.error("Server save failed:", r.status);
+        alert("Could not save to server. Your changes are saved in this browser only.");
+      }
+    })
+    .catch(() => {
+      alert("Could not reach server. Your changes are saved in this browser only.");
+    });
   render();
 }
 

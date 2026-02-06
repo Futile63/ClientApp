@@ -10,7 +10,7 @@
 <body>
   <header>
     <h1>Client List</h1>
-    <p class="sub">Add and manage all clients by tier.</p>
+    <p class="sub">Add and manage clients by tier. Back up your data regularly.</p>
 
     <nav class="tierNav" aria-label="Navigation">
       <a class="tierNavLink" href="/">← Dashboard</a>
@@ -57,11 +57,18 @@
       </form>
     </section>
 
-    <!-- Search -->
+    <!-- Search + Backup -->
     <section class="card">
       <div class="row row-tight">
         <h2>All clients</h2>
         <input id="search" placeholder="Search..." />
+      </div>
+      <div class="row row-tight backupRow">
+        <span class="hint">Backup your data (for work, back up regularly):</span>
+        <div class="backupBtns">
+          <button type="button" id="exportJsonBtn" class="ghost">Download JSON</button>
+          <button type="button" id="exportCsvBtn" class="ghost">Download CSV</button>
+        </div>
       </div>
     </section>
 
