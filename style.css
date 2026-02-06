@@ -1,0 +1,415 @@
+/* =========================
+   ROOT / THEME
+   ========================= */
+:root {
+  --bg: #0f172a;
+  --card: #111827;
+  --border: rgba(255,255,255,0.12);
+  --text: #e5e7eb;
+  --muted: #9ca3af;
+  --accent: #60a5fa;
+  --danger: #f87171;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: linear-gradient(180deg, #020617, #0f172a);
+  color: var(--text);
+}
+
+/* =========================
+   GLOBAL ELEMENTS
+   ========================= */
+h1, h2, h3 {
+  margin: 0;
+  font-weight: 700;
+}
+
+h1 {
+  font-size: 28px;
+}
+
+h2 {
+  font-size: 20px;
+}
+
+h3 {
+  font-size: 16px;
+}
+
+p {
+  margin: 0;
+}
+
+input, select, button {
+  font-family: inherit;
+  font-size: 14px;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.03);
+  color: var(--text);
+}
+
+textarea {
+  font-family: inherit;
+  font-size: 14px;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--muted);
+}
+
+button {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.05);
+  color: var(--text);
+  cursor: pointer;
+}
+
+button:hover {
+  border-color: var(--accent);
+}
+
+button.danger {
+  border-color: rgba(248,113,113,0.5);
+  color: var(--danger);
+}
+
+button.ghost {
+  background: transparent;
+}
+
+/* =========================
+   HEADER
+   ========================= */
+header {
+  padding: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+header .sub {
+  color: var(--muted);
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+/* =========================
+   MAIN LAYOUT
+   ========================= */
+main {
+  padding: 20px;
+  display: grid;
+  gap: 20px;
+}
+
+/* =========================
+   CARD SYSTEM
+   ========================= */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 16px;
+}
+
+.cardInner {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 12px;
+}
+
+/* =========================
+   ROWS / UTILITIES
+   ========================= */
+.row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.row-tight {
+  align-items: center;
+  justify-content: space-between;
+}
+
+.row-right {
+  justify-content: flex-end;
+}
+
+label {
+  display: grid;
+  gap: 6px;
+  flex: 1;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.hint {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* =========================
+   TODAY LIST
+   ========================= */
+.todayList {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 0;
+  display: grid;
+  gap: 10px;
+}
+
+.todayItem {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px;
+  background: rgba(255,255,255,0.03);
+}
+
+.todayItemRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.todayLeft {
+  min-width: 0;
+  flex-shrink: 0;
+}
+
+.todayCenter {
+  flex: 1;
+  min-width: 120px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.todayCenter .todayNotes,
+.todayCenter .todayToDo {
+  margin-bottom: 4px;
+}
+
+.todayCenter .todayNotes:last-child,
+.todayCenter .todayToDo:last-child {
+  margin-bottom: 0;
+}
+
+.todayRight {
+  flex-shrink: 0;
+}
+
+.todayTopRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.todayName {
+  font-weight: 700;
+}
+
+/* =========================
+   PILLS / BADGES
+   ========================= */
+.pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.pill {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12px;
+  background: rgba(255,255,255,0.03);
+}
+
+.pill.warn {
+  border-color: rgba(96,165,250,0.6);
+  color: var(--accent);
+}
+
+.pill.danger {
+  border-color: rgba(248,113,113,0.6);
+  color: var(--danger);
+}
+
+.pillDueRed {
+  border-color: rgba(248,113,113,0.7);
+  color: #fca5a5;
+}
+
+.pillDueYellow {
+  border-color: rgba(250,204,21,0.7);
+  color: #fde047;
+}
+
+.pillDueGreen {
+  border-color: rgba(34,197,94,0.6);
+  color: #86efac;
+}
+
+/* =========================
+   BUCKETS
+   ========================= */
+.bucketGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 12px;
+}
+
+@media (max-width: 900px) {
+  .bucketGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.bucketHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.bucketLink {
+  color: var(--text);
+  text-decoration: none;
+  font-weight: inherit;
+}
+
+.bucketLink:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.bucketCount {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.bucketList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.bucketItem {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 10px;
+  display: grid;
+  gap: 6px;
+  background: rgba(255,255,255,0.03);
+}
+
+.bucketItemTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.bucketName {
+  font-weight: 700;
+}
+
+.bucketMeta {
+  font-size: 13px;
+  color: var(--muted);
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* =========================
+   TABLE
+   ========================= */
+.tableWrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+th, td {
+  padding: 10px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+
+th {
+  color: var(--muted);
+  font-weight: 600;
+}
+
+/* =========================
+   EDIT DIALOG
+   ========================= */
+dialog {
+  border: none;
+  background: transparent;
+}
+
+dialog::backdrop {
+  background: rgba(0,0,0,0.6);
+}
+
+.dialogCard {
+  max-width: 840px;
+  width: 90vw;
+}
+
+.dialogCard textarea {
+  min-height: 60px;
+  resize: none;
+  overflow-y: hidden;
+}
+/* =========================
+   NAV (TIER PAGES)
+   ========================= */
+.tierNav {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.tierNavLink {
+  text-decoration: none;
+  color: var(--text);
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.03);
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+}
+
+.tierNavLink:hover {
+  border-color: var(--accent);
+}

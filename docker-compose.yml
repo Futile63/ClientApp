@@ -1,0 +1,17 @@
+# Client Command Center - run with: docker compose up -d
+# Data is stored in the named volume so it survives container restarts.
+
+services:
+  ccc:
+    build: .
+    container_name: client-command-center
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ccc-data:/app/data
+    environment:
+      - NODE_ENV=production
+
+volumes:
+  ccc-data:
