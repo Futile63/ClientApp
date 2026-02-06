@@ -1,8 +1,9 @@
-// Serve Client Command Center on the LAN so iPad/other devices can access it.
-// Run: npm start  →  then open http://192.168.0.70:3000 from your iPad
-// Data is stored in data/clients.json so all devices see the same list.
+// Client Command Center - optional login when APP_USER and APP_PASSWORD are set.
+// Data is stored in data/clients.json.
+require("dotenv").config();
 
 const express = require("express");
+const session = require("express-session");
 const path = require("path");
 const fs = require("fs");
 
@@ -11,10 +12,61 @@ const PORT = Number(process.env.PORT) || 3000;
 const HOST = "0.0.0.0";
 const DATA_FILE = path.join(__dirname, "data", "clients.json");
 
-app.use(express.json());
-app.use(express.static(__dirname));
+const AUTH_ENABLED =
+  process.env.APP_USER && process.env.APP_USER.trim() &&
+  process.env.APP_PASSWORD && process.env.APP_PASSWORD.trim();
+const SESSION_SECRET = process.env.SESSION_SECRET || "change-me-in-production";
 
-// API: shared client list (so computer and iPad see the same data)
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(
+  session({
+    secret: SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: { httpOnly: true, maxAge: 7 * 24 * 60 * 60 * 1000 }, // 7 days
+  })
+);
+
+function requireAuth(req, res, next) {
+  if (!AUTH_ENABLED) return next();
+  if (req.session && req.session.user) return next();
+  if (req.path === "/login" && (req.method === "GET" || req.method === "POST")) return next();
+  if (req.path === "/logout") return next();
+  if (req.path.startsWith("/api/")) return res.status(401).json({ error: "Unauthorized" });
+  return res.redirect("/login");
+}
+
+app.use(requireAuth);
+
+app.get("/login", (req, res) => {
+  if (req.session && req.session.user) return res.redirect("/");
+  res.sendFile(path.join(__dirname, "login.html"));
+});
+
+app.post("/login", (req, res) => {
+  const user = (req.body.username || "").trim();
+  const pass = req.body.password || "";
+  if (
+    AUTH_ENABLED &&
+    user === process.env.APP_USER &&
+    pass === process.env.APP_PASSWORD
+  ) {
+    req.session.user = user;
+    return res.redirect("/");
+  }
+  res.redirect("/login?error=1");
+});
+
+app.get("/logout", (req, res) => {
+  req.session.destroy(() => {});
+  res.redirect("/login");
+});
+app.post("/logout", (req, res) => {
+  req.session.destroy(() => {});
+  res.redirect("/login");
+});
+
 function readClients() {
   try {
     if (!fs.existsSync(DATA_FILE)) return null;
@@ -61,9 +113,11 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
 
+app.use(express.static(__dirname));
+
 app.listen(PORT, HOST, () => {
-  console.log(`Client Command Center running at:`);
-  console.log(`  http://localhost:${PORT}`);
-  console.log(`  http://192.168.0.70:${PORT}  (use this on your iPad)`);
-  console.log(`  Data file: ${DATA_FILE}`);
+  console.log(`Client Command Center running at http://localhost:${PORT}`);
+  if (AUTH_ENABLED) console.log("Login enabled (APP_USER / APP_PASSWORD set).");
+  else console.log("Login disabled. Set APP_USER and APP_PASSWORD to enable.");
+  console.log("Data file:", DATA_FILE);
 });
